@@ -404,8 +404,6 @@ $ docker import http://example.com/exampleimage.tgz example/imagerepo
 
 
 
-
-
 ## Dockerfile
 
 ### 初见dockerfile
@@ -518,9 +516,99 @@ COPY ./package.json /app/
    Hello, Docker!
    ```
 
-   
 
-## Compose
+
+
+### Dockerfile详解
+
+#### FROM 指定基础镜像
+
+#### RUN 运行指定命令
+
+注意
+
+#### COPY 复制文件
+
+格式：
+
+- `COPY [--chown=<user>:<group>] <源路径>... <目标路径>`
+
+- `COPY [--chown=<user>:<group>] ["<源路径1>",... "<目标路径>"]`
+
+  
+
+#### CMD 容器启动命令
+
+`CMD` 指令的格式和 `RUN` 相似，也是两种格式：
+
+- `shell` 格式：`CMD <命令>`
+
+- `exec` 格式：`CMD ["可执行文件", "参数1", "参数2"...]`
+
+  参数列表格式：`CMD ["参数1", "参数2"...]`。在指定了 `ENTRYPOINT` 指令后，用 `CMD` 指定具体的参数。
+
+
+
+在运行时可以指定新的命令来替代镜像设置中的这个CMD命令，比如，`ubuntu` 镜像默认的 `CMD` 是 `/bin/bash`，如果我们直接 `docker run -it ubuntu` 的话，会直接进入 `bash`。我们也可以在运行时指定运行别的命令，如 `docker run -it ubuntu cat /etc/os-release`。这就是用 `cat /etc/os-release` 命令替换了默认的 `/bin/bash` 命令了，输出了系统版本信息。
+
+
+
+#### ENTRYPOINT 入口点
+
+`ENTRYPOINT` 的格式和 `RUN` 指令格式一样，分为 `exec` 格式和 `shell` 格式。
+
+`ENTRYPOINT` 的目的和 `CMD` 一样，都是在指定容器启动程序及参数。
+
+当指定了 `ENTRYPOINT` 后，`CMD` 的含义就发生了改变，不再是直接的运行其命令，而是将 `CMD` 的内容作为参数传给 `ENTRYPOINT` 指令，换句话说实际执行时，将变为：
+
+```bash
+<ENTRYPOINT> "<CMD>"
+```
+
+- Q: 那么有了 `CMD` 后，为什么还要有 `ENTRYPOINT` 呢？这种 `<ENTRYPOINT> "<CMD>"` 有什么好处么？
+
+- A: 可以保证该镜像入口统一，然后`docker run <镜像名> [附加参数]` 更方便传入参数
+
+  
+
+#### ENV 设置环境变量
+
+格式有两种：
+
+- `ENV <key> <value>`
+- `ENV <key1>=<value1> <key2>=<value2>...`
+
+这个指令很简单，就是设置环境变量而已
+
+
+
+#### WORKDIR 指定工作目录
+
+格式为 `WORKDIR <工作目录路径>`。
+
+使用 `WORKDIR` 指令可以来指定工作目录（或者称为当前目录），以后各层的当前目录就被改为指定的目录，如该目录不存在，`WORKDIR` 会帮你建立目录。
+
+
+
+#### EXPOSE 声明端口
+
+格式为 `EXPOSE <端口1> [<端口2>...]`。
+
+`EXPOSE` 指令是声明容器运行时提供服务的端口，这只是一个声明，在容器运行时并不会因为这个声明应用就会开启这个端口的服务。在 Dockerfile 中写入这样的声明有两个好处，一个是帮助镜像使用者理解这个镜像服务的守护端口，以方便配置映射；另一个用处则是在运行时使用随机端口映射时，也就是 `docker run -P` 时，会自动随机映射 `EXPOSE` 的端口。
+
+要将 `EXPOSE` 和在运行时使用 `-p <宿主端口>:<容器端口>` 区分开来。`-p`，是映射宿主端口和容器端口，换句话说，就是将容器的对应端口服务公开给外界访问，而 `EXPOSE` 仅仅是声明容器打算使用什么端口而已，并不会自动在宿主进行端口映射。
+
+
+
+#### LABEL 增加标签
+
+`LABEL` 指令用来给镜像以键值对的形式添加一些元数据（metadata）。如：
+
+`LABEL MAINTAINER="Draymond"`
+
+
+
+## Docker Compose
 
 
 
