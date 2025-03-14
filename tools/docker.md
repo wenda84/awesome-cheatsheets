@@ -12,6 +12,28 @@ Docker速查表
   ```bash
   sudo dnf install -y docker-ce docker-ce-cli containerd.io
   ```
+  
+  - docker-ce（Docker Community Edition）
+  
+    这是 Docker 的社区版核心组件，包含 Docker 守护进程（dockerd），负责管理容器的生命周期、镜像构建、网络和存储等核心功能。广义上，它还包括 Docker 命令行工具（CLI）和插件（如 docker-compose），但通过 dnf 安装的 docker-ce 主要提供守护进程服务。
+  
+  - docker-ce-cli（Docker 命令行工具）
+  
+    提供与 Docker 守护进程交互的命令行接口，例如 docker run、docker build 等常用命令。它是用户操作 Docker 的主要入口，但本身不直接管理容器，需通过 API 与 dockerd 通信。
+  
+  - containerd.io（容器运行时）
+  
+    是 Docker 的底层容器运行时组件，负责容器的创建、销毁、镜像管理和存储等核心操作。Docker 通过调用 containerd 与 Linux 内核的命名空间、Cgroups 等交互，实现容器隔离和资源控制
+  
+  目前安装的版本为: 28.0.1
+  
+  ```bash
+  docker version 
+  Client: Docker Engine - Community
+   Version:           28.0.1
+  ```
+  
+  
 
 ### 配置
 
@@ -362,15 +384,14 @@ $ docker import http://example.com/exampleimage.tgz example/imagerepo
    $ docker exec -it webserver bash
    root@3729b97e8226:/# echo '<h1>Hello, Docker!</h1>' > /usr/share/nginx/html/index.html
    root@3729b97e8226:/# exit
-   exit
    ```
-
+   
    容器里的改动可用diff命令查看
    
     ```bash
     $ docker diff webserver
     ```
-
+   
 3. 执行docker commit
 
    `docker commit` 的语法格式为：
@@ -423,24 +444,7 @@ Dockerfile 是一个文本文件，其内包含了一条条的 **指令(Instruct
 
    - FROM 指定基础镜像
 
-     如果你以 `scratch` 为基础镜像的话，意味着你不以任何镜像为基础，接下来所写的指令将作为镜像第一层开始存在。
-
-   - RUN 执行命令，其格式有两种：
-
-     - *shell* 格式：`RUN <命令>`
-     - *exec* 格式：`RUN ["可执行文件", "参数1", "参数2"]`
-
-     **说明：**无论使用哪种格式，每条 `RUN` 指令都会生成一个新的镜像层。因此，**推荐合并多个命令**以减少层数：
-
-     ```dockerfile
-     # 不推荐（生成 3 层）
-     RUN apt-get update
-     RUN apt-get install -y nginx
-     RUN apt-get clean
-     
-     # 推荐（生成 1 层）
-     RUN apt-get update && apt-get install -y nginx && apt-get clean
-     ```
+   - RUN 执行命令
 
 2. 构建镜像
 
@@ -454,7 +458,9 @@ Dockerfile 是一个文本文件，其内包含了一条条的 **指令(Instruct
    docker run --name mynginx -d -p 8080:80 nginx:my
    ```
 
-#### 镜像构建上下文（Context）
+
+
+#### 上下文（Context）
 
 怎么理解`docker build -t nginx:my .`这条命令里最后的'.' ？
 
@@ -469,6 +475,8 @@ COPY ./package.json /app/
 ```
 
 这并不是要复制执行 `docker build` 命令所在的目录下的 `package.json`，也不是复制 `Dockerfile` 所在目录下的 `package.json`，而是复制 **上下文（context）** 目录下的 `package.json`。
+
+
 
 #### 构建hello docker示例镜像
 
@@ -523,9 +531,28 @@ COPY ./package.json /app/
 
 #### FROM 指定基础镜像
 
+如果以 `scratch` 为基础镜像的话，意味着你不以任何镜像为基础，接下来所写的指令将作为镜像第一层开始存在。
+
+PS:不是特别推荐用 `scratch` 为基础镜像，因为连个hello world都要完全静态编译才能运行。
+
 #### RUN 运行指定命令
 
-注意
+- *shell* 格式：`RUN <命令>`
+- *exec* 格式：`RUN ["可执行文件", "参数1", "参数2"]`
+
+**说明：**无论使用哪种格式，每条 `RUN` 指令都会生成一个新的镜像层。因此，**推荐合并多个命令**以减少层数：
+
+```dockerfile
+# 不推荐（生成 3 层）
+RUN apt-get update
+RUN apt-get install -y nginx
+RUN apt-get clean
+
+# 推荐（生成 1 层）
+RUN apt-get update && apt-get install -y nginx && apt-get clean
+```
+
+
 
 #### COPY 复制文件
 
@@ -609,6 +636,21 @@ COPY ./package.json /app/
 
 
 ## Docker Compose
+
+`Compose` 项目是 Docker 官方的开源项目，负责实现对 Docker 容器集群的快速编排。
+
+`Compose` 允许用户通过一个单独的 `docker-compose.yml` 模板文件（YAML 格式）来定义一组相关联的应用容器为一个项目（project）。
+
+`Compose` 中有两个重要的概念：
+
+- 服务 (`service`)：一个应用的容器，实际上可以包括若干运行相同镜像的容器实例。
+- 项目 (`project`)：由一组关联的应用容器组成的一个完整业务单元，在 `docker-compose.yml` 文件中定义。
+
+`Compose` 的默认管理对象是项目，通过子命令对项目中的一组容器进行便捷地生命周期管理。
+
+### 安装
+
+最新的docker已自带，无需安装。老版本需要手工安装。
 
 
 
