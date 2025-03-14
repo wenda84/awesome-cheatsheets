@@ -1,17 +1,25 @@
 Docker速查表
 ===
 
+
+
 ## Docker安装、配置
 
 ### 安装
 
-TODO
+- Rocky下安装
+
+  ```bash
+  sudo dnf install -y docker-ce docker-ce-cli containerd.io
+  ```
 
 ### 配置
 
 建议做的一些配置：
 
 #### 代理配置
+
+目前镜像站全挂了，必须配置代理服务器。
 
 TODO
 
@@ -68,13 +76,13 @@ context    -- Manage contexts
 
 ```bash
 $ docker images
-REPOSITORY   TAG                  IMAGE ID       CREATED          SIZE
-nginx        v2                   c02d40cdf684   11 minutes ago   192MB
-nginx        new                  65ab3b94c371   18 minutes ago   192MB
-ubuntu       v1.0                 556ad375a557   8 hours ago      63.2MB
+REPOSITORY              TAG                  IMAGE ID       CREATED         SIZE
+hello_docker            1.0                  6e928b6135b5   3 hours ago     15.6MB
+frolvlad/alpine-glibc   latest               a40ab1a88ba2   3 weeks ago     15.6MB
+node                    20.10.0-alpine3.19   0dc964c4b6e5   15 months ago   136MB
 ```
 
-
+`frolvlad/alpine-glibc` 这样的`REPOSITORY`前面的frolvlad为用户名，没有用户名的`REPOSITORY`为官方镜像
 
 #### Docker Registry 公开服务
 
@@ -396,15 +404,121 @@ $ docker import http://example.com/exampleimage.tgz example/imagerepo
 
 
 
-### 初见dockerfile
-
-
-
 
 
 ## Dockerfile
 
-TODO
+### 初见dockerfile
+
+Dockerfile 是一个文本文件，其内包含了一条条的 **指令(Instruction)**，每一条指令构建一层，因此每一条指令的内容，就是描述该层应当如何构建。
+
+#### 示例
+
+以之前定制 `nginx` 镜像为例，这次我们使用 Dockerfile 来定制。
+
+1. 在一个空白目录中，建立一个文本文件，并命名为 `Dockerfile`，内容为
+
+   ```dockerfile
+   FROM nginx
+   RUN echo '<h1>Hello, Docker!</h1>' > /usr/share/nginx/html/index.html
+   ```
+
+   - FROM 指定基础镜像
+
+     如果你以 `scratch` 为基础镜像的话，意味着你不以任何镜像为基础，接下来所写的指令将作为镜像第一层开始存在。
+
+   - RUN 执行命令，其格式有两种：
+
+     - *shell* 格式：`RUN <命令>`
+     - *exec* 格式：`RUN ["可执行文件", "参数1", "参数2"]`
+
+     **说明：**无论使用哪种格式，每条 `RUN` 指令都会生成一个新的镜像层。因此，**推荐合并多个命令**以减少层数：
+
+     ```dockerfile
+     # 不推荐（生成 3 层）
+     RUN apt-get update
+     RUN apt-get install -y nginx
+     RUN apt-get clean
+     
+     # 推荐（生成 1 层）
+     RUN apt-get update && apt-get install -y nginx && apt-get clean
+     ```
+
+2. 构建镜像
+
+   ```bash
+   docker build -t nginx:my .
+   ```
+
+3. 运行
+
+   ```bash
+   docker run --name mynginx -d -p 8080:80 nginx:my
+   ```
+
+#### 镜像构建上下文（Context）
+
+怎么理解`docker build -t nginx:my .`这条命令里最后的'.' ？
+
+‘.’ 表示当前目录，而 `Dockerfile` 就在当前目录，因此不少初学者以为这个路径是在指定 `Dockerfile` 所在路径，这么理解其实是不准确的。如果对应上面的命令格式，你可能会发现，这是在指定 **上下文路径**。
+
+构建的时候，用户会指定构建镜像上下文的路径，`docker build` 命令得知这个路径后，会将路径下的所有内容打包，然后上传给 Docker 引擎。这样 Docker 引擎收到这个上下文包后，展开就会获得构建镜像所需的一切文件。
+
+如果在 `Dockerfile` 中这么写：
+
+```docker
+COPY ./package.json /app/
+```
+
+这并不是要复制执行 `docker build` 命令所在的目录下的 `package.json`，也不是复制 `Dockerfile` 所在目录下的 `package.json`，而是复制 **上下文（context）** 目录下的 `package.json`。
+
+#### 构建hello docker示例镜像
+
+1. 新建c源码
+
+   ```bash
+   vim hello_docker.c 
+   ```
+
+   ```c
+   #include <stdio.h>
+   int main() {
+      printf("Hello, Docker!\n");
+      return 0;
+   }
+   ```
+
+2. 编译
+
+   ```bash
+   gcc -o hello_docker hello_docker.c
+   ```
+
+3. 新建Dockerfie
+
+   ```dockerfile
+   FROM frolvlad/alpine-glibc
+   
+   # 复制编译好的二进制文件到容器
+   COPY hello_docker /hello_docker
+   
+   # 运行程序
+   CMD ["/hello_docker"]
+   ```
+
+   - 没有使用scratch，是因为编译生成的hello_docker还依赖glic的库。想完全的静态编译，还需要额外安装相关的静态库软件。
+
+   - 没有使用alpine作为基础镜像，是因为alpine提供的不是glibc，而是musl。我仍希望继续使用gcc编译，所以使用alpine-glibc。
+
+4. 构建、运行 Docker 镜像
+
+   ```bash
+   $ docker build -t hello-docker:1.0 .
+   $ docker run --rm hello-docker:1.0
+   Hello, Docker!
+   ```
+
+   
 
 ## Compose
 
