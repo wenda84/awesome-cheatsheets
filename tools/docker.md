@@ -5,35 +5,64 @@ Docker速查表
 
 ## Docker安装、配置
 
-### 安装
+### 安装（Rocky 9.5下安装）
 
-- Rocky下安装
+1. 卸载自带的容器
 
-  ```bash
-  sudo dnf install -y docker-ce docker-ce-cli containerd.io
-  ```
-  
-  - docker-ce（Docker Community Edition）
-  
-    这是 Docker 的社区版核心组件，包含 Docker 守护进程（dockerd），负责管理容器的生命周期、镜像构建、网络和存储等核心功能。广义上，它还包括 Docker 命令行工具（CLI）和插件（如 docker-compose），但通过 dnf 安装的 docker-ce 主要提供守护进程服务。
-  
-  - docker-ce-cli（Docker 命令行工具）
-  
-    提供与 Docker 守护进程交互的命令行接口，例如 docker run、docker build 等常用命令。它是用户操作 Docker 的主要入口，但本身不直接管理容器，需通过 API 与 dockerd 通信。
-  
-  - containerd.io（容器运行时）
-  
-    是 Docker 的底层容器运行时组件，负责容器的创建、销毁、镜像管理和存储等核心操作。Docker 通过调用 containerd 与 Linux 内核的命名空间、Cgroups 等交互，实现容器隔离和资源控制
-  
-  目前安装的版本为: 28.0.1
-  
-  ```bash
-  docker version 
-  Client: Docker Engine - Community
-   Version:           28.0.1
-  ```
-  
-  
+   ```bash
+   sudo dnf remove -y podman buildah
+   ```
+
+2. 安装依赖软件
+
+   ```bash
+   sudo dnf install -y yum-utils device-mapper-persistent-data lvm2
+   ```
+
+3. 添加软件源
+
+   ```bash
+   sudo tee /etc/yum.repos.d/docker-ce.repo <<EOF
+   [docker-ce-stable]
+   name=Docker CE Stable - \$basearch
+   baseurl=https://mirrors.aliyun.com/docker-ce/linux/centos/9/\$basearch/stable
+   enabled=1
+   gpgcheck=1
+   gpgkey=https://mirrors.aliyun.com/docker-ce/linux/centos/gpg
+   EOF
+   ```
+
+4. 开始安装
+
+   ```bash
+   sudo dnf makecache
+   sudo dnf install -y docker-ce docker-ce-cli containerd.io
+   ```
+
+   - docker-ce（Docker Community Edition）
+
+     这是 Docker 的社区版核心组件，包含 Docker 守护进程（dockerd），负责管理容器的生命周期、镜像构建、网络和存储等核心功能。广义上，它还包括 Docker 命令行工具（CLI）和插件（如 docker-compose），但通过 dnf 安装的 docker-ce 主要提供守护进程服务。
+
+
+   - docker-ce-cli（Docker 命令行工具）
+
+     提供与 Docker 守护进程交互的命令行接口，例如 docker run、docker build 等常用命令。它是用户操作 Docker 的主要入口，但本身不直接管理容器，需通过 API 与 dockerd 通信。
+
+
+   - containerd.io（容器运行时）
+
+     是 Docker 的底层容器运行时组件，负责容器的创建、销毁、镜像管理和存储等核心操作。Docker 通过调用 containerd 与 Linux 内核的命名空间、Cgroups 等交互，实现容器隔离和资源控制
+
+
+​	目前安装的版本为: 28.0.1
+
+5. 启动服务
+
+   ```bash
+   sudo systemctl start docker
+   ```
+
+   
 
 ### 配置
 
@@ -43,11 +72,49 @@ Docker速查表
 
 目前镜像站全挂了，必须配置代理服务器。
 
-TODO
+```
+sudo mkdir /etc/systemd/system/docker.service.d/
+sudo vim /etc/systemd/system/docker.service.d/http-proxy.conf 
+```
+
+http-proxy.conf 内容如下：
+
+```ini
+[Service]
+Environment="HTTP_PROXY=http://your_proxy_server:your_proxy_port"
+Environment="HTTPS_PROXY=http://your_proxy_server:your_proxy_port"
+```
+重启服务
+
+```bash
+# 重新加载 systemd 管理器配置
+sudo systemctl daemon-reload
+
+# 重启 Docker 服务
+sudo systemctl restart docker
+```
+
+如果你需要在构建 Docker 镜像时使用代理，可以在 Dockerfile 中设置环境变量：
+
+```dockerfile
+# 设置 HTTP 和 HTTPS 代理
+ENV HTTP_PROXY=http://your_proxy_server:your_proxy_port
+ENV HTTPS_PROXY=http://your_proxy_server:your_proxy_port
+
+# 构建镜像的其他指令
+FROM ubuntu:latest
+RUN apt-get update && apt-get install -y some-package
+```
+
+
 
 #### 用户组配置（Linux）
 
 Linux下将个人用户加入到docker组中，这样无需切到root用户也可正常使用docker命令。
+
+```
+sudo usermod -aG docker <个人用户名>
+```
 
 #### 自动联想（zsh）
 
