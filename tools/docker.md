@@ -41,17 +41,18 @@ Docker速查表
 
    - docker-ce（Docker Community Edition）
 
-     这是 Docker 的社区版核心组件，包含 Docker 守护进程（dockerd），负责管理容器的生命周期、镜像构建、网络和存储等核心功能。广义上，它还包括 Docker 命令行工具（CLI）和插件（如 docker-compose），但通过 dnf 安装的 docker-ce 主要提供守护进程服务。
-
-
-   - docker-ce-cli（Docker 命令行工具）
-
-     提供与 Docker 守护进程交互的命令行接口，例如 docker run、docker build 等常用命令。它是用户操作 Docker 的主要入口，但本身不直接管理容器，需通过 API 与 dockerd 通信。
-
-
-   - containerd.io（容器运行时）
-
-     是 Docker 的底层容器运行时组件，负责容器的创建、销毁、镜像管理和存储等核心操作。Docker 通过调用 containerd 与 Linux 内核的命名空间、Cgroups 等交互，实现容器隔离和资源控制
+     这是 Docker 的社区版核心组件，包含 Docker 守护进程（dockerd），负责管理容器的生命周期、镜像构建、网络和存储等核心功能。
+   
+   
+      - docker-ce-cli（Docker 命令行工具）
+   
+        提供与 Docker 守护进程交互的命令行接口，例如 docker run、docker build 等常用命令。它是用户操作 Docker 的主要入口，但本身不直接管理容器，需通过 API 与 dockerd 通信。
+   
+   
+      - containerd.io（容器运行时）
+   
+        是 Docker 的底层容器运行时组件，负责容器的创建、销毁、镜像管理和存储等核心操作。Docker 通过调用 containerd 与 Linux 内核的命名空间、Cgroups 等交互，实现容器隔离和资源控制
+   
 
 
 ​	目前安装的版本为: 28.0.1
@@ -64,9 +65,7 @@ Docker速查表
 
    
 
-### 配置
-
-建议做的一些配置：
+### 配置（建议做的一些配置）
 
 #### 代理配置
 
@@ -194,7 +193,8 @@ $ docker pull [选项] [Docker Registry 地址[:端口号]/]仓库名[:标签]
 ```
 
 - Docker 镜像仓库地址：地址的格式一般是 `<域名/IP>[:端口号]`。默认地址是 Docker Hub(`docker.io`)。
-- 仓库名：如之前所说，这里的仓库名是两段式名称，即 `<用户名>/<软件名>`。对于 Docker Hub，如果不给出用户名，则默认为 `library`，也就是官方镜像。
+- 仓库名：如之前所说，这里的仓库名是两段式名称，即 `<用户名>/<软件名>`。如果不给出用户名，则默认为 `library`，也就是官方镜像。
+- 标签：不带则默认为latest
 
 比如：
 
@@ -204,15 +204,11 @@ $ docker pull ubuntu:18.04
 
 #### 运行
 
-有了镜像后，我们就能够以这个镜像为基础启动并运行一个容器。以上面的 `ubuntu:18.04` 为例，如果我们打算启动里面的 `bash` 并且进行交互式操作的话，可以执行下面的命令。
+以上面的 `ubuntu:18.04` 为例，如果我们打算启动里面的 `bash` 并且进行交互式操作的话，可以执行下面的命令。
 
 ```bash
 $ docker run -it ubuntu:18.04 bash
-
-root@e7009c6ce357:/# cat /etc/os-release
-NAME="Ubuntu"
-VERSION="18.04.1 LTS (Bionic Beaver)"
-...
+root@e7009c6ce357:/# 
 ```
 
 - `-it`：这是两个参数，一个是 `-i`：交互式操作，一个是 `-t` 终端。我们这里打算进入 `bash` 执行一些命令并查看返回结果，因此我们需要交互式终端。
@@ -299,9 +295,9 @@ docker run --name webserver -d -p 80:80 nginx
 
 可以利用 `docker ps -a` 命令，查看本地所有的容器
 
-可以利用 `docker container start 容器ID（或容器名称）` 命令（也可以简化为docker start ...），直接将一个已经终止（`exited`）的容器启动运行。
+可以利用 `docker container start <容器ID（或容器名称）>` 命令（也可以简化为docker start ...），直接将一个已经终止（`exited`）的容器启动运行。
 
-#### 流程说明
+#### 启动流程说明
 
 容器的核心为所执行的应用程序，所需要的资源都是应用程序运行所必需的。除此之外，并没有其它的资源。可以在伪终端中利用 `ps` 或 `top` 来查看进程信息。
 
@@ -320,8 +316,6 @@ docker run --name webserver -d -p 80:80 nginx
 可以使用 `docker container stop` 或简化为`docker stop`来终止一个运行中的容器。
 
 此外，当 Docker 容器中指定的应用终结时，容器也自动终止。
-
-例如对于上一章节中只启动了一个终端的容器，用户通过 `exit` 命令或 `Ctrl+d` 来退出终端时，所创建的容器立刻终止。
 
 此外，`docker container restart` 命令会将一个运行态的容器终止，然后再重新启动它。
 
@@ -485,9 +479,6 @@ $ docker import http://example.com/exampleimage.tgz example/imagerepo
     $ docker history nginx:v2 
     IMAGE          CREATED          CREATED BY                                       SIZE      COMMENT
     c02d40cdf684   29 seconds ago   nginx -g daemon off;                             1.23kB    修改了默认网页
-    b52e0b094bc0   5 weeks ago      CMD ["nginx" "-g" "daemon off;"]                 0B        buildkit.dockerfile.v0
-    <missing>      5 weeks ago      STOPSIGNAL SIGQUIT                               0B        buildkit.dockerfile.v0
-    <missing>      5 weeks ago      EXPOSE map[80/tcp:{}]                            0B        buildkit.dockerfile.v0
     ```
 
 
@@ -527,7 +518,7 @@ Dockerfile 是一个文本文件，其内包含了一条条的 **指令(Instruct
 
 
 
-#### 上下文（Context）
+#### 上下文（Context）概念
 
 怎么理解`docker build -t nginx:my .`这条命令里最后的'.' ？
 
@@ -547,7 +538,7 @@ COPY ./package.json /app/
 
 #### 构建hello docker示例镜像
 
-1. 新建c源码
+1. 示例c源码
 
    ```bash
    vim hello_docker.c 
@@ -579,7 +570,7 @@ COPY ./package.json /app/
    CMD ["/hello_docker"]
    ```
 
-   - 没有使用scratch，是因为编译生成的hello_docker还依赖glic的库。想完全的静态编译，还需要额外安装相关的静态库软件。
+   - 没有使用scratch基础镜像，是因为编译生成的hello_docker还依赖glic的库。想完全使用空的基础镜像，需要静态编译。静态编译还需要编译环境额外安装相关的静态库软件，不常使用，不推荐。
 
    - 没有使用alpine作为基础镜像，是因为alpine提供的不是glibc，而是musl。我仍希望继续使用gcc编译，所以使用alpine-glibc。
 
