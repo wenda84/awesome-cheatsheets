@@ -44,14 +44,14 @@ Docker速查表
      这是 Docker 的社区版核心组件，包含 Docker 守护进程（dockerd），负责管理容器的生命周期、镜像构建、网络和存储等核心功能。
    
    
-      - docker-ce-cli（Docker 命令行工具）
+    - docker-ce-cli（Docker 命令行工具）
    
-        提供与 Docker 守护进程交互的命令行接口，例如 docker run、docker build 等常用命令。它是用户操作 Docker 的主要入口，但本身不直接管理容器，需通过 API 与 dockerd 通信。
+      提供与 Docker 守护进程交互的命令行接口，例如 docker run、docker build 等常用命令。它是用户操作 Docker 的主要入口，但本身不直接管理容器，需通过 API 与 dockerd 通信。
    
    
-      - containerd.io（容器运行时）
+    - containerd.io（容器运行时）
    
-        是 Docker 的底层容器运行时组件，负责容器的创建、销毁、镜像管理和存储等核心操作。Docker 通过调用 containerd 与 Linux 内核的命名空间、Cgroups 等交互，实现容器隔离和资源控制
+      是 Docker 的底层容器运行时组件，负责容器的创建、销毁、镜像管理和存储等核心操作。Docker 通过调用 containerd 与 Linux 内核的命名空间、Cgroups 等交互，实现容器隔离和资源控制
    
 
 
