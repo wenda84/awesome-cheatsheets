@@ -593,6 +593,37 @@ COPY ./package.json /app/
 
 PS:不是特别推荐用 `scratch` 为基础镜像，因为连个hello world都要完全静态编译才能运行。
 
+
+
+**注意（踩过坑）：如果dockerfile中有多个FROM** 
+
+每个 `FROM` 指令都会 **进入新的构建阶段**，并且 **不继承** 之前阶段的文件系统。
+
+在 **多阶段构建（multi-stage build）** 中：
+
+1. **每个 `FROM` 代表一个独立的构建阶段**，不会自动共享文件。
+2. **后续阶段可以使用 `COPY --from=阶段名` 来获取前一阶段的文件**，但不会继承它的环境。
+
+
+
+**示例：**
+
+```dockerfile
+# 第一阶段：构建 Go 应用
+FROM golang:1.20 AS builder
+WORKDIR /app
+COPY . .
+RUN go build -o myapp
+
+# 第二阶段：仅保留可执行文件，减小体积
+FROM alpine:latest
+WORKDIR /root/
+COPY --from=builder /app/myapp .
+CMD ["./myapp"]
+```
+
+
+
 #### RUN 运行指定命令
 
 - *shell* 格式：`RUN <命令>`
