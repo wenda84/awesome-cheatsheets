@@ -5,7 +5,7 @@ Docker速查表
 
 ## Docker安装、配置
 
-### 安装（Rocky 9.5下安装）
+### 安装（在Rocky 9.5下安装自测通过）
 
 1. 卸载自带的容器
 
@@ -62,7 +62,11 @@ Docker速查表
    ```bash
    sudo systemctl start docker
    ```
-
+6. 设置开机自启动（可选）
+   ```shell
+   sudo systemctl enable docker
+   ```
+   
    
 
 ### 配置（建议做的一些配置）
