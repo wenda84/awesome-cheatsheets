@@ -80,12 +80,12 @@ sudo mkdir /etc/systemd/system/docker.service.d/
 sudo vim /etc/systemd/system/docker.service.d/http-proxy.conf 
 ```
 
-http-proxy.conf 内容如下：
+http-proxy.conf 内容如下：(proxy_server:proxy_port 需替换为实际的代理服务器地址)
 
 ```ini
 [Service]
-Environment="HTTP_PROXY=http://your_proxy_server:your_proxy_port"
-Environment="HTTPS_PROXY=http://your_proxy_server:your_proxy_port"
+Environment="HTTP_PROXY=http://proxy_server:proxy_port"
+Environment="HTTPS_PROXY=http://proxy_server:proxy_port"
 ```
 重启服务
 
@@ -97,12 +97,27 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker
 ```
 
+测试下能否从官方仓库获取镜像
+
+```shell
+docker run hello-world
+```
+
+正常会有以下输出
+
+```shell
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+```
+
+
+
 如果你需要在构建 Docker 镜像时使用代理，可以在 Dockerfile 中设置环境变量：
 
 ```dockerfile
 # 设置 HTTP 和 HTTPS 代理
-ENV HTTP_PROXY=http://your_proxy_server:your_proxy_port
-ENV HTTPS_PROXY=http://your_proxy_server:your_proxy_port
+ENV HTTP_PROXY=http://proxy_server:proxy_port
+ENV HTTPS_PROXY=http://proxy_server:proxy_port
 
 # 构建镜像的其他指令
 FROM ubuntu:latest
@@ -119,9 +134,9 @@ Linux下将个人用户加入到docker组中，这样无需切到root用户也�
 sudo usermod -aG docker <个人用户名>
 ```
 
-#### 自动联想（zsh）
+#### 自动联想（zsh环境）
 
-强烈推荐使用zsh下的docker插件，补全能力大大提升
+强烈推荐使用zsh下的docker插件，补全能力大大提升。
 
 修改~/.zshrc文件，启动docker插件(zsh默认启用了git插件）
 
