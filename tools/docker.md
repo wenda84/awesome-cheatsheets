@@ -115,12 +115,14 @@ This message shows that your installation appears to be working correctly.
 如果你需要在构建 Docker 镜像时使用代理，可以在 Dockerfile 中设置环境变量：
 
 ```dockerfile
+FROM ubuntu:latest
+
 # 设置 HTTP 和 HTTPS 代理
+# 建议将 ENV http_proxy 和 ENV https_proxy 放在 FROM 之后，否则有些构建步骤可能不会继承。
 ENV HTTP_PROXY=http://proxy_server:proxy_port
 ENV HTTPS_PROXY=http://proxy_server:proxy_port
 
 # 构建镜像的其他指令
-FROM ubuntu:latest
 RUN apt-get update && apt-get install -y some-package
 ```
 
