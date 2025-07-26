@@ -71,7 +71,7 @@ Docker速查表
 
 ### 配置（建议做的一些配置）
 
-#### 代理配置
+#### docker pull代理配置（必做）
 
 目前镜像站全挂了，必须配置代理服务器。
 
@@ -110,9 +110,15 @@ Hello from Docker!
 This message shows that your installation appears to be working correctly.
 ```
 
+**==注意：==**
 
+本步骤代理设置完成后，仅是命令行里docker pull时会使用代理服务器，如果dockerfile里依赖了某个基础镜像，自动pull时仍然不会使用代理服务器，还有别的配置。可以手工在命令行里docker pull进行规避。
 
-如果你需要在构建 Docker 镜像时使用代理，可以在 Dockerfile 中设置环境变量：
+#### dockerfile代理配置（选做）
+
+如果构建 Docker 镜像时需要使用代理，比如构建时会执行pip或者npm操作，需要在 Dockerfile 中设置环境变量：
+
+因为pip或者npm的官方仓库没有被墙，所以只要编译机能正常联网，该代理设置不做也行。
 
 ```dockerfile
 FROM ubuntu:latest
