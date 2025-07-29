@@ -112,7 +112,7 @@ This message shows that your installation appears to be working correctly.
 
 **==注意：==**
 
-本步骤代理设置完成后，仅是命令行里docker pull时会使用代理服务器，如果dockerfile里依赖了某个基础镜像，自动pull时仍然不会使用代理服务器，还有别的配置。可以手工在命令行里docker pull进行规避。
+本步骤代理设置完成后，仅是命令行里docker pull时会使用代理服务器，如果dockerfile里依赖了某个基础镜像，自动pull时仍然不会使用代理服务器，还有别的配置，但懒得去研究配置了，可以手工在命令行里提前docker pull需要的依赖镜像，这样也可以进行规避。
 
 #### dockerfile代理配置（选做）
 
