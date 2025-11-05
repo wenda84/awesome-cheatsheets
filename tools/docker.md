@@ -364,7 +364,7 @@ docker run --name webserver -d -p 80:80 nginx
 
 ```bash
 $ docker run -dit ubuntu
-$ docker exec -it [容器名称/ID] bash
+$ docker exec -it [容器名称/ID] sh
 root@69d137adef7a:/#
 ```
 
